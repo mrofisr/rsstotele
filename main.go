@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 	"rsstogo/pkg"
@@ -11,7 +12,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/mmcdole/gofeed"
 )
 
 func main() {
@@ -46,20 +46,9 @@ func main() {
 
 	// Replace CHANNEL_NAME with the name of your Telegram channel (e.g. "@mychannel")
 	channelName := os.Getenv("CHANNEL_USERNAME")
-
-	// Parse the RSS feed
-	fp := gofeed.NewParser()
-	feed, err := fp.ParseURL("https://stackoverflow.blog/newsletter/feed")
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Get the 5 newest items in the RSS feed
-	var newestItems []*gofeed.Item
-	for i := 0; i < 5 && i < len(feed.Items); i++ {
-		newestItems = append(newestItems, feed.Items[i])
-	}
 	// Send updates for the newest items to the Telegram channel
 	s := gocron.NewScheduler(time.FixedZone("UTC+7", 7*60*60))
+	fmt.Println("Start send to your telegram")
 	s.Every(1).Minutes().Do(func() {
 		err = pkg.CheckForUpdates(bot, channelName, db)
 		if err != nil {
